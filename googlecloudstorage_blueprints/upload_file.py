@@ -189,7 +189,7 @@ def upload_google_cloud_storage_file(
           f'{bucket.name}/{destination_full_path}')
 
 
-def get_gclient():
+def get_gclient(args):
     """
     Attempts to create the Google Cloud Storage Client with the associated
     environment variables
@@ -230,7 +230,7 @@ def main():
     destination_folder_name = clean_folder_name(args.destination_folder_name)
     source_file_name_match_type = args.source_file_name_match_type
 
-    gclient = get_gclient()
+    gclient = get_gclient(args)
     bucket = get_bucket(gclient=gclient, bucket_name=bucket_name)
 
     if source_file_name_match_type == 'regex_match':

@@ -178,7 +178,7 @@ def download_google_cloud_storage_file(blob, destination_file_name=None):
     return
 
 
-def get_gclient():
+def get_gclient(args):
     """
     Attempts to create the Google Cloud Storage Client with the associated
     environment variables
@@ -234,13 +234,14 @@ def main():
     source_full_path = combine_folder_and_file_name(
         folder_name=source_folder_name, file_name=source_file_name)
     source_file_name_match_type = args.source_file_name_match_type
+    gcp_application_credentials = args.gcp_application_credentials
 
     destination_folder_name = clean_folder_name(args.destination_folder_name)
     if not os.path.exists(destination_folder_name) and \
             (destination_folder_name != ''):
         os.makedirs(destination_folder_name)
 
-    gclient = get_gclient()
+    gclient = get_gclient(args)
     bucket = get_bucket(gclient=gclient, bucket_name=bucket_name)
 
     if source_file_name_match_type == 'regex_match':
