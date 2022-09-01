@@ -181,12 +181,18 @@ def main():
                 destination_bucket=destination_bucket, destination_blob_path=destination_full_path
             )
     else:
+        # if no destination file name
+        if args.destination_file_name:
+            destination_file_name = args.destination_file_name
+        else:
+            destination_file_name = source_file_name
+        
         blob = get_storage_blob(bucket=source_bucket,
                                 source_folder_name=source_folder_name,
                                 source_file_name=source_file_name)
         destination_full_path = shipyard.files.combine_folder_and_file_name(
             destination_folder_name,
-            args.destination_file_name,
+            destination_file_name,
         )
         move_google_cloud_storage_file(
             source_bucket=source_bucket, source_blob_path=blob.name,
