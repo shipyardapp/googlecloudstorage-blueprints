@@ -3,9 +3,14 @@ import re
 import json
 import tempfile
 import argparse
+import sys
 import shipyard_utils as shipyard
 from google.cloud import storage
 from google.cloud.exceptions import *
+
+EXIT_CODE_INVALID_CREDENTIALS = 200
+EXIT_CODE_INVALID_BUCKET = 201
+EXIT_CODE_FILE_NOT_FOUND = 205
 
 
 def get_args():
@@ -92,10 +97,10 @@ def get_gclient(args):
     """
     try:
         gclient = storage.Client()
-    except Exception as e:
+    except Exception:
         print(f'Error accessing Google Cloud Storage with service account '
               f'{args.gcp_application_credentials}')
-        raise(e)
+        sys.exit(EXIT_CODE_INVALID_CREDENTIALS)
 
     return gclient
 
@@ -110,7 +115,7 @@ def get_bucket(*,
         bucket = gclient.get_bucket(bucket_name)
     except NotFound as e:
         print(f'Bucket {bucket_name} does not exist\n {e}')
-        raise(e)
+        sys.exit(EXIT_CODE_INVALID_BUCKET)
 
     return bucket
 
@@ -129,7 +134,8 @@ def get_storage_blob(bucket, source_folder_name, source_file_name):
         return blob
     except Exception as e:
         print(f'File {source_path} does not exist')
-        raise(e)
+        sys.exit(EXIT_CODE_FILE_NOT_FOUND)
+
 
 def move_google_cloud_storage_file(source_bucket, source_blob_path, 
                                 destination_bucket, destination_blob_path):
