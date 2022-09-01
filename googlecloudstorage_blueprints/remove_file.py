@@ -3,9 +3,15 @@ import json
 import argparse
 import re
 import tempfile
+import sys
 import shipyard_utils as shipyard
 from google.cloud import storage
 from google.cloud.exceptions import *
+
+
+EXIT_CODE_INVALID_CREDENTIALS = 200
+EXIT_CODE_INVALID_BUCKET = 201
+EXIT_CODE_FILE_NOT_FOUND = 205
 
 
 def get_args():
@@ -68,10 +74,10 @@ def get_gclient(args):
     """
     try:
         gclient = storage.Client()
-    except Exception as e:
+    except Exception:
         print(f'Error accessing Google Cloud Storage with service account '
               f'{args.gcp_application_credentials}')
-        raise(e)
+        sys.exit(EXIT_CODE_INVALID_CREDENTIALS)
 
     return gclient
 
@@ -86,7 +92,7 @@ def get_bucket(*,
         bucket = gclient.get_bucket(bucket_name)
     except NotFound as e:
         print(f'Bucket {bucket_name} does not exist\n {e}')
-        raise(e)
+        sys.exit(EXIT_CODE_INVALID_BUCKET)
 
     return bucket
 
@@ -105,7 +111,7 @@ def get_storage_blob(bucket, source_folder_name, source_file_name):
         return blob
     except Exception as e:
         print(f'File {source_path} does not exist')
-        raise(e)
+        sys.exit(EXIT_CODE_FILE_NOT_FOUND)
 
 
 
@@ -115,12 +121,19 @@ def delete_google_cloud_storage_file(blob):
     """
     blob_bucket, blob_name = blob.bucket.name, blob.name
     blob.delete()
-    try: # check if deleted
-        blob.exists()
-        print("Error, blob not successfully deleted yet")
-    except Exception:
-        print(f"Blob {blob_bucket}/{blob_name} deleted.")
+    print(f"Blob {blob_bucket}/{blob_name} delete ran successfully")
 
+
+def gcp_find_matching_files(file_blobs, file_name_re):
+    """
+    Return a list of all file_names that matched the regular expression.
+    """
+    matching_file_names = []
+    for blob in file_blobs:
+        if re.search(file_name_re, blob.name):
+            matching_file_names.append(blob)
+
+    return matching_file_names
 
 
 def main():
@@ -137,7 +150,7 @@ def main():
     if source_file_name_match_type == 'regex_match':
         file_names = find_google_cloud_storage_file_names(
             bucket=bucket, prefix=source_folder_name)
-        matching_file_names = shipyard.files.find_all_file_matches(file_names,
+        matching_file_names = gcp_find_matching_files(file_names,
                                                   re.compile(source_file_name))
         print(f'{len(matching_file_names)} files found. Preparing to delete...')
 
