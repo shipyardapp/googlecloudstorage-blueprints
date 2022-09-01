@@ -98,7 +98,7 @@ def get_gclient(args):
     try:
         gclient = storage.Client()
     except Exception:
-        print(f'Error accessing Google Cloud Storage with service account '
+        print(f'Error accessing Google Cloud Storage with service account ',
               f'{args.gcp_application_credentials}')
         sys.exit(EXIT_CODE_INVALID_CREDENTIALS)
 
@@ -155,6 +155,17 @@ def move_google_cloud_storage_file(source_bucket, source_blob_path,
     print(f'File moved from {source_blob} to {dest_blob}')
 
 
+def gcp_find_matching_files(file_blobs, file_name_re):
+    """
+    Return a list of all file_names that matched the regular expression.
+    """
+    matching_file_names = []
+    for blob in file_blobs:
+        if re.search(file_name_re, blob.name):
+            matching_file_names.append(blob)
+
+    return matching_file_names
+
 
 def main():
     args = get_args()
@@ -173,7 +184,7 @@ def main():
     if source_file_name_match_type == 'regex_match':
         file_names = find_google_cloud_storage_file_names(
             bucket=source_bucket, prefix=source_folder_name)
-        matching_file_names = shipyard.files.find_all_file_matches(file_names,
+        matching_file_names = gcp_find_matching_files(file_names,
                                                   re.compile(source_file_name))
         print(f'{len(matching_file_names)} files found. Preparing to move...')
 
