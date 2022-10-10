@@ -7,11 +7,10 @@ import sys
 import shipyard_utils as shipyard
 from google.cloud import storage
 from google.cloud.exceptions import *
-
-
-EXIT_CODE_INVALID_CREDENTIALS = 200
-EXIT_CODE_INVALID_BUCKET = 201
-EXIT_CODE_FILE_NOT_FOUND = 205
+try:
+    import exit_codes as ec
+except BaseException:
+    from . import exit_codes as ec
 
 
 def get_args():
@@ -77,7 +76,7 @@ def get_gclient(args):
     except Exception:
         print(f'Error accessing Google Cloud Storage with service account '
               f'{args.gcp_application_credentials}')
-        sys.exit(EXIT_CODE_INVALID_CREDENTIALS)
+        sys.exit(ec.EXIT_CODE_INVALID_CREDENTIALS)
 
     return gclient
 
@@ -92,7 +91,7 @@ def get_bucket(*,
         bucket = gclient.get_bucket(bucket_name)
     except NotFound as e:
         print(f'Bucket {bucket_name} does not exist\n {e}')
-        sys.exit(EXIT_CODE_INVALID_BUCKET)
+        sys.exit(ec.EXIT_CODE_INVALID_BUCKET)
 
     return bucket
 
@@ -111,7 +110,7 @@ def get_storage_blob(bucket, source_folder_name, source_file_name):
         return blob
     except Exception as e:
         print(f'File {source_path} does not exist')
-        sys.exit(EXIT_CODE_FILE_NOT_FOUND)
+        sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
 
 
