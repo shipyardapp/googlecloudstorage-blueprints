@@ -193,7 +193,7 @@ def main():
             print(f"Error in finding regex matches. Please make sure a valid regex is entered")
             sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
-        for index, blob in enumerate(matching_file_names,index):
+        for index, blob in enumerate(matching_file_names,1):
             dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = destination_file_name)
             destination_full_path = shipyard.files.determine_destination_full_path(
                 destination_folder_name = destination_folder_name,
