@@ -182,17 +182,29 @@ def main():
     source_bucket = get_bucket(gclient=gclient, bucket_name=source_bucket_name)
     destination_bucket = get_bucket(gclient=gclient, bucket_name=destination_bucket_name)
     if source_file_name_match_type == 'regex_match':
-        file_names = find_google_cloud_storage_file_names(
-            bucket=source_bucket, prefix=source_folder_name)
-        matching_file_names = gcp_find_matching_files(file_names,
-                                                  re.compile(source_file_name))
-        print(f'{len(matching_file_names)} files found. Preparing to move...')
+        try:
+            file_names = find_google_cloud_storage_file_names(
+                bucket=source_bucket, prefix=source_folder_name)
+            matching_file_names = gcp_find_matching_files(file_names,
+                                                    re.compile(source_file_name))
+            
+            print(f'{len(matching_file_names)} files found. Preparing to move...')
+        except Exception as e:
+            print(f"Error in finding regex matches. Please make sure a valid regex is entered")
+            sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
-        for index, blob in enumerate(matching_file_names):
-            destination_full_path = shipyard.files.combine_folder_and_file_name(
-                args.destination_folder_name, blob
+        for index, blob in enumerate(matching_file_names,index):
+            dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = destination_file_name)
+            destination_full_path = shipyard.files.determine_destination_full_path(
+                destination_folder_name = destination_folder_name,
+                destination_file_name = dest_file_name,
+                source_full_path = blob,
+                file_number = index
             )
-            print(f'moving file {index+1} of {len(matching_file_names)}')
+            # destination_full_path = shipyard.files.combine_folder_and_file_name(
+            #     args.destination_folder_name, blob
+            # )
+            print(f'moving file {index} of {len(matching_file_names)}')
             move_google_cloud_storage_file(
                 source_bucket=source_bucket, source_blob_path=blob,
                 destination_bucket=destination_bucket, destination_blob_path=destination_full_path
@@ -207,10 +219,15 @@ def main():
         blob = get_storage_blob(bucket=source_bucket,
                                 source_folder_name=source_folder_name,
                                 source_file_name=source_file_name)
-        destination_full_path = shipyard.files.combine_folder_and_file_name(
-            destination_folder_name,
-            destination_file_name,
-        )
+        destination_full_path = shipyard.files.determine_destination_full_path(
+            destination_folder_name = destination_folder_name,
+            destination_file_name = destination_file_name,
+            source_full_path = blob
+        ) 
+        # destination_full_path = shipyard.files.combine_folder_and_file_name(
+        #     destination_folder_name,
+        #     destination_file_name,
+        # )
         move_google_cloud_storage_file(
             source_bucket=source_bucket, source_blob_path=blob.name,
             destination_bucket=destination_bucket, destination_blob_path=destination_full_path
