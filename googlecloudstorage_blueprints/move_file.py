@@ -200,12 +200,14 @@ def main():
 
         for index, blob in enumerate(matching_file_names,1):
             dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = destination_file_name)
+            print(dest_file_name)
             destination_full_path = shipyard.files.determine_destination_full_path(
                 destination_folder_name = destination_folder_name,
                 destination_file_name = dest_file_name,
                 source_full_path = blob,
                 file_number = index
             )
+            print(destination_full_path)
             # destination_full_path = shipyard.files.combine_folder_and_file_name(
             #     args.destination_folder_name, blob
             # )
