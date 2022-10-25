@@ -177,6 +177,11 @@ def main():
     source_file_name_match_type = args.source_file_name_match_type
 
     destination_folder_name = shipyard.files.clean_folder_name(args.destination_folder_name)
+    # if no destination file name
+    if args.destination_file_name:
+        destination_file_name = args.destination_file_name
+    else:
+        destination_file_name = source_file_name
 
     gclient = get_gclient(args)
     source_bucket = get_bucket(gclient=gclient, bucket_name=source_bucket_name)
@@ -210,11 +215,6 @@ def main():
                 destination_bucket=destination_bucket, destination_blob_path=destination_full_path
             )
     else:
-        # if no destination file name
-        if args.destination_file_name:
-            destination_file_name = args.destination_file_name
-        else:
-            destination_file_name = source_file_name
         
         blob = get_storage_blob(bucket=source_bucket,
                                 source_folder_name=source_folder_name,
