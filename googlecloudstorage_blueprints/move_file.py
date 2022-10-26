@@ -199,16 +199,16 @@ def main():
             sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
         for index, blob in enumerate(matching_file_names,1):
-            dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = None)
-            destination_full_path = shipyard.files.determine_destination_full_path(
-                destination_folder_name = destination_folder_name,
-                destination_file_name = dest_file_name,
-                source_full_path = blob,
-                file_number = index
-            )
-            # destination_full_path = shipyard.files.combine_folder_and_file_name(
-            #     args.destination_folder_name, blob
+            # dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = None)
+            # destination_full_path = shipyard.files.determine_destination_full_path(
+            #     destination_folder_name = destination_folder_name,
+            #     destination_file_name = dest_file_name,
+            #     source_full_path = blob,
+            #     file_number = index
             # )
+            destination_full_path = shipyard.files.combine_folder_and_file_name(
+                args.destination_folder_name, blob
+            )
             print(f'moving file {index} of {len(matching_file_names)}')
             move_google_cloud_storage_file(
                 source_bucket=source_bucket, source_blob_path=blob,
