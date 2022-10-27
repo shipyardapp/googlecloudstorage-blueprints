@@ -6,7 +6,7 @@ import argparse
 import sys
 import shipyard_utils as shipyard
 from google.cloud import storage
-from google.cloud.exceptions import *
+# from google.cloud.exceptions import *
 try:
     import exit_codes as ec
 except BaseException:
@@ -113,7 +113,7 @@ def get_bucket(*,
     """
     try:
         bucket = gclient.get_bucket(bucket_name)
-    except NotFound as e:
+    except Exception as e:
         print(f'Bucket {bucket_name} does not exist\n {e}')
         sys.exit(ec.EXIT_CODE_INVALID_BUCKET)
 
@@ -199,19 +199,15 @@ def main():
             sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
         for index, blob in enumerate(matching_file_names,1):
-            # dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob,destination_file_name = None)
-            # destination_full_path = shipyard.files.determine_destination_full_path(
-            #     destination_folder_name = destination_folder_name,
-            #     destination_file_name = dest_file_name,
-            #     source_full_path = blob,
-            #     file_number = index
-            # )
-            destination_full_path = shipyard.files.combine_folder_and_file_name(
-                args.destination_folder_name, blob
+            dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob.name,destination_file_name = None)
+            destination_full_path = shipyard.files.determine_destination_full_path(
+                destination_folder_name = destination_folder_name,
+                destination_file_name = dest_file_name,
+                source_full_path = blob
             )
             print(f'moving file {index} of {len(matching_file_names)}')
             move_google_cloud_storage_file(
-                source_bucket=source_bucket, source_blob_path=blob,
+                source_bucket=source_bucket, source_blob_path=blob.name,
                 destination_bucket=destination_bucket, destination_blob_path=destination_full_path
             )
     else:
@@ -224,10 +220,6 @@ def main():
             destination_file_name = destination_file_name,
             source_full_path = blob
         ) 
-        # destination_full_path = shipyard.files.combine_folder_and_file_name(
-        #     destination_folder_name,
-        #     destination_file_name,
-        # )
         move_google_cloud_storage_file(
             source_bucket=source_bucket, source_blob_path=blob.name,
             destination_bucket=destination_bucket, destination_blob_path=destination_full_path

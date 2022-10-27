@@ -131,3 +131,5 @@ dmypy.json
 # GCP login settings
 shipyard-solutions-*.json
 .DS_Store
+key_flat.json
+.vscode
