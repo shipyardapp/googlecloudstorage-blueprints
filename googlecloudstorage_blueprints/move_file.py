@@ -215,9 +215,10 @@ def main():
         blob = get_storage_blob(bucket=source_bucket,
                                 source_folder_name=source_folder_name,
                                 source_file_name=source_file_name)
+        dest_file = shipyard.files.determine_destination_file_name(source_full_path = blob.name, destination_file_name= destination_file_name)
         destination_full_path = shipyard.files.determine_destination_full_path(
             destination_folder_name = destination_folder_name,
-            destination_file_name = destination_file_name,
+            destination_file_name = dest_file,
             source_full_path = blob
         ) 
         move_google_cloud_storage_file(
