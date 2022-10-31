@@ -177,11 +177,7 @@ def main():
     source_file_name_match_type = args.source_file_name_match_type
 
     destination_folder_name = shipyard.files.clean_folder_name(args.destination_folder_name)
-    # if no destination file name
-    if args.destination_file_name:
-        destination_file_name = args.destination_file_name
-    else:
-        destination_file_name = source_file_name
+    destination_file_name = args.destination_file_name
 
     gclient = get_gclient(args)
     source_bucket = get_bucket(gclient=gclient, bucket_name=source_bucket_name)
@@ -199,11 +195,11 @@ def main():
             sys.exit(ec.EXIT_CODE_FILE_NOT_FOUND)
 
         for index, blob in enumerate(matching_file_names,1):
-            dest_file_name = shipyard.files.determine_destination_file_name(source_full_path = blob.name,destination_file_name = None)
             destination_full_path = shipyard.files.determine_destination_full_path(
                 destination_folder_name = destination_folder_name,
-                destination_file_name = dest_file_name,
-                source_full_path = blob
+                destination_file_name = destination_file_name,
+                source_full_path = blob.name,
+                file_number= None if len(matching_file_names) == 1 else index
             )
             print(f'moving file {index} of {len(matching_file_names)}')
             move_google_cloud_storage_file(
