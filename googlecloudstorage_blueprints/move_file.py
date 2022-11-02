@@ -155,18 +155,6 @@ def move_google_cloud_storage_file(source_bucket, source_blob_path,
     print(f'File moved from {source_blob} to {dest_blob}')
 
 
-def gcp_find_matching_files(file_blobs, file_name_re):
-    """
-    Return a list of all file_names that matched the regular expression.
-    """
-    matching_file_names = []
-    for blob in file_blobs:
-        if re.search(file_name_re, blob.name):
-            matching_file_names.append(blob)
-
-    return matching_file_names
-
-
 def main():
     args = get_args()
     tmp_file = set_environment_variables(args)
@@ -184,10 +172,10 @@ def main():
     destination_bucket = get_bucket(gclient=gclient, bucket_name=destination_bucket_name)
     if source_file_name_match_type == 'regex_match':
         try:
-            file_names = find_google_cloud_storage_file_names(
+            blobs = find_google_cloud_storage_file_names(
                 bucket=source_bucket, prefix=source_folder_name)
-            matching_file_names = gcp_find_matching_files(file_names,
-                                                    re.compile(source_file_name))
+            file_names = list(map(lambda x: x.name,blobs))
+            matching_file_names = shipyard.files.find_all_file_matches(file_names,re.compile(source_file_name))
             
             print(f'{len(matching_file_names)} files found. Preparing to move...')
         except Exception as e:
@@ -198,12 +186,12 @@ def main():
             destination_full_path = shipyard.files.determine_destination_full_path(
                 destination_folder_name = destination_folder_name,
                 destination_file_name = destination_file_name,
-                source_full_path = blob.name,
+                source_full_path = blob,
                 file_number= None if len(matching_file_names) == 1 else index
             )
             print(f'moving file {index} of {len(matching_file_names)}')
             move_google_cloud_storage_file(
-                source_bucket=source_bucket, source_blob_path=blob.name,
+                source_bucket=source_bucket, source_blob_path=blob,
                 destination_bucket=destination_bucket, destination_blob_path=destination_full_path
             )
     else:
